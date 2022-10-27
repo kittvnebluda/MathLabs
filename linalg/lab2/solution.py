@@ -5,7 +5,7 @@ from itertools import chain
 class Matrix:
     def __init__(self, arr):
         """
-        Class for 2D matrixes
+        Class for 2D matrices
         """
         self.matrix = arr
         self.shape = len(arr), len(arr[0])
@@ -36,20 +36,19 @@ class Matrix:
                 if isinstance(other, Matrix):
                     new_matrix[i][j] = sum(self.matrix[i][k] * other.matrix[k][j] for k in range(self.shape[1]))
 
-                else:
+                elif isinstance(other, int) or isinstance(other, float):
                     new_matrix[i][j] *= other
 
         return Matrix(new_matrix)
 
     def getT(self):
-        if self.shape[0] != self.shape[1]:
-            return
+        new_matrix = []
 
-        new_matrix = deepcopy(self.matrix)
-
-        for i in range(self.shape[0]):
-            for j in range(self.shape[1]):
-                new_matrix[i][j] = self.matrix[j][i]
+        for i in range(self.shape[1]):
+            row = []
+            for j in range(self.shape[0]):
+                row.append(self.matrix[j][i])
+            new_matrix.append(row)
 
         return Matrix(new_matrix)
 
@@ -106,3 +105,6 @@ except AttributeError:
 # print(str(c.getT()).replace("[", "{").replace("]", "}"))
 # print(str(a * b).replace("[", "{").replace("]", "}").replace(".0", ""))
 # print(str(b * a).replace("[", "{").replace("]", "}").replace(".0", ""))
+
+# print(Matrix.from_what([1, 2, 3, 4, 5, 6], 2, 3))
+# print(Matrix.from_what([1, 2, 3, 4, 5, 6], 2, 3).getT())
