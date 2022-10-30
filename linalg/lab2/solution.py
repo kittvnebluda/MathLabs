@@ -12,6 +12,7 @@ class Matrix:
 
     def __add__(self, other):
         if self.shape != other.shape:
+            if __debug__: print("Размеры суммируемых матриц не равны")
             return
 
         new_matrix = deepcopy(self.matrix)
@@ -26,18 +27,25 @@ class Matrix:
         return str(self.matrix)
 
     def __mul__(self, other):
-        if type(other) == Matrix and self.shape[0] != other.shape[1]:
+        if self.shape[1] != other.shape[0]:
+            if __debug__: print(f"Размеры умножаемых матриц не верные: {self.shape[0]} != {other.shape[1]}")
             return
 
+        new_matrix = [[0] * other.shape[1] for _ in range(self.shape[0])]
+
+        for i in range(self.shape[0]):
+            for j in range(other.shape[1]):
+                    new_matrix[i][j] = sum(self.matrix[i][k] * other.matrix[k][j] for k in range(self.shape[1]))
+
+        return Matrix(new_matrix)
+
+
+    def __rmul__(self, other):
         new_matrix = deepcopy(self.matrix)
 
         for i in range(self.shape[0]):
             for j in range(self.shape[1]):
-                if isinstance(other, Matrix):
-                    new_matrix[i][j] = sum(self.matrix[i][k] * other.matrix[k][j] for k in range(self.shape[1]))
-
-                elif isinstance(other, int) or isinstance(other, float):
-                    new_matrix[i][j] *= other
+                new_matrix[i][j] *= other
 
         return Matrix(new_matrix)
 
@@ -84,10 +92,10 @@ b = Matrix.from_what(b, n2, m2)
 c = Matrix.from_what(c, n3, m3)
 
 try:
-    x = a * (b * k + c.getT())
+    x = a * (k * b + c.getT())
 
     with open("output.txt", "w") as f:
-        f.write(f"{1}\n")
+        f.write("1\n")
         f.write(f"{x.shape[0]} {x.shape[1]}\n")
 
         flat_x = x.flatten()
@@ -97,7 +105,7 @@ try:
 
 except AttributeError:
     with open("output.txt", "w") as f:
-        f.write(str(0))
+        f.write("0")
 
 # print(str(a).replace("[", "{").replace("]", "}").replace(".0", ""))
 # print(str(b).replace("[", "{").replace("]", "}").replace(".0", ""))
