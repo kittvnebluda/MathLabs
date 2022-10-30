@@ -35,10 +35,9 @@ class Matrix:
 
         for i in range(self.shape[0]):
             for j in range(other.shape[1]):
-                    new_matrix[i][j] = sum(self.matrix[i][k] * other.matrix[k][j] for k in range(self.shape[1]))
+                new_matrix[i][j] = sum(self.matrix[i][k] * other.matrix[k][j] for k in range(self.shape[1]))
 
         return Matrix(new_matrix)
-
 
     def __rmul__(self, other):
         new_matrix = deepcopy(self.matrix)
@@ -106,13 +105,3 @@ try:
 except AttributeError:
     with open("output.txt", "w") as f:
         f.write("0")
-
-# print(str(a).replace("[", "{").replace("]", "}").replace(".0", ""))
-# print(str(b).replace("[", "{").replace("]", "}").replace(".0", ""))
-# print(str(c).replace("[", "{").replace("]", "}"))
-# print(str(c.getT()).replace("[", "{").replace("]", "}"))
-# print(str(a * b).replace("[", "{").replace("]", "}").replace(".0", ""))
-# print(str(b * a).replace("[", "{").replace("]", "}").replace(".0", ""))
-
-# print(Matrix.from_what([1, 2, 3, 4, 5, 6], 2, 3))
-# print(Matrix.from_what([1, 2, 3, 4, 5, 6], 2, 3).getT())
