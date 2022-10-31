@@ -20,14 +20,14 @@ def solve(mat, ans):
 
 
 def check_mn(f, s):
-    return 0 if s == 0 else f / s
+    return "0" if s == 0 else f / s
 
 
 def is_line(a, b):
     mn = a[0][0] / a[1][0] \
-        if check_mn(a[0][0], a[1][0]) else a[0][1] / a[1][1] \
-        if check_mn(a[0][1], a[1][1]) else b[0] / b[1] \
-        if check_mn(b[0], b[1]) else 0
+        if check_mn(a[0][0], a[1][0]) != "0" else a[0][1] / a[1][1] \
+        if check_mn(a[0][1], a[1][1]) != "0" else b[0] / b[1] \
+        if check_mn(b[0], b[1]) != "0" else 0
 
     return (a[0][0] * mn == a[1][0] and a[0][1] * mn == a[1][1] and b[0] * mn == b[1]) or \
            (a[0][0] == a[1][0] * mn and a[0][1] == a[1][1] * mn and b[0] == b[1] * mn)

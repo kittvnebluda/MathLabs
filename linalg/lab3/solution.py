@@ -47,31 +47,45 @@ d1 = m1.getD()
 d2 = m2.getD()
 
 with open("output.txt", "w") as f:
-    if d0 != 0:
-        f.write(f"2 {d1/d0} {d2/d0}")
+    try:
+        if d0 != 0:
+            f.write(f"2 {d1/d0} {d2/d0}")
 
-    elif not any(slae):
-        f.write("5")
+        elif not any(slae):
+            f.write("5")
 
-    elif d == 0 and c != 0:
-        x = q / c
-        f.write(f"3 {x}")
+        elif d == 0 and c != 0:
+            x = q / c
+            f.write(f"3 {x}")
 
-    elif a != 0 and b == 0:
-        x = p / a
-        f.write(f"3 {x}")
+        elif a != 0 and b == 0:
+            x = p / a
+            f.write(f"3 {x}")
 
-    elif c == 0 and d != 0:
-        y = q / d
-        f.write(f"4 {y}")
+        elif c == 0 and d != 0:
+            y = q / d
+            f.write(f"4 {y}")
 
-    elif a == 0 and b != 0:
-        y = p / b
-        f.write(f"4 {y}")
+        elif a == 0 and b != 0:
+            y = p / b
+            f.write(f"4 {y}")
 
-    elif a / c == b / d == p / q:
-        f.write(f"1 {-a / b} {p / b}")
+        elif c != 0 and d != 0 and a / c == b / d == p / q:
+            if b != 0:
+                f.write(f"1 {-a / b} {p / b}")
+            elif d != 0:
+                f.write(f"1 {-c / d} {q / d}")
 
-    else:
+        elif a != 0 and b != 0 and c / a == d / b == q / p:
+            if b != 0:
+                f.write(f"1 {-a / b} {p / b}")
+            elif d != 0:
+                f.write(f"1 {-c / d} {q / d}")
+
+        else:
+            f.write("0")
+
+    except Exception as e:
+        print(e)
         f.write("0")
 
