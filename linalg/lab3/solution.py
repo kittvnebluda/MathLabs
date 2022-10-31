@@ -96,6 +96,17 @@ with open("output.txt", "w") as f:
     elif c == 0 and d == 0 and p == 0 and q == 0:
         f.write(f"1 {-a / b} {p / b}")
 
+    elif a != 0 and b != 0 and p == 0 and c / a == d / b:
+        if d != 0:
+            f.write(f"1 {-c / d} {q / d}")
+        else:
+            f.write(f"1 {-a / b} {p / b}")
+
+    elif c != 0 and d != 0 and q == 0 and a / c == b / d:
+        if b != 0:
+            f.write(f"1 {-a / b} {p / b}")
+        else:
+            f.write(f"1 {-c / d} {q / d}")
+
     else:
         f.write("0")
-
