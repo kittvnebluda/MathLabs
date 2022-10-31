@@ -47,45 +47,55 @@ d1 = m1.getD()
 d2 = m2.getD()
 
 with open("output.txt", "w") as f:
-    try:
-        if d0 != 0:
-            f.write(f"2 {d1/d0} {d2/d0}")
+    if d0 != 0:
+        f.write(f"2 {d1/d0} {d2/d0}")
 
-        elif not any(slae):
-            f.write("5")
+    elif d0 == 0 and (d1 != 0 or d2 != 0):
+        f.write("0")
 
-        elif d == 0 and c != 0:
-            x = q / c
-            f.write(f"3 {x}")
+    elif not any(slae):
+        f.write("5")
 
-        elif a != 0 and b == 0:
-            x = p / a
-            f.write(f"3 {x}")
+    # elif a == 0 and b == 0 and p != 0:
+    #     f.write("0")
+    #
+    # elif c == 0 and d == 0 and q != 0:
+    #     f.write("0")
 
-        elif c == 0 and d != 0:
-            y = q / d
-            f.write(f"4 {y}")
+    elif d == 0 and c != 0:
+        x = q / c
+        f.write(f"3 {x}")
 
-        elif a == 0 and b != 0:
-            y = p / b
-            f.write(f"4 {y}")
+    elif c == 0 and d != 0:
+        y = q / d
+        f.write(f"4 {y}")
 
-        elif c != 0 and d != 0 and a / c == b / d == p / q:
-            if b != 0:
-                f.write(f"1 {-a / b} {p / b}")
-            elif d != 0:
-                f.write(f"1 {-c / d} {q / d}")
+    elif a != 0 and b == 0:
+        x = p / a
+        f.write(f"3 {x}")
 
-        elif a != 0 and b != 0 and c / a == d / b == q / p:
-            if b != 0:
-                f.write(f"1 {-a / b} {p / b}")
-            elif d != 0:
-                f.write(f"1 {-c / d} {q / d}")
+    elif a == 0 and b != 0:
+        y = p / b
+        f.write(f"4 {y}")
 
+    elif a != 0 and b != 0 and p != 0 and c / a == d / b == q / p:
+        if d != 0:
+            f.write(f"1 {-c / d} {q / d}")
         else:
-            f.write("0")
+            f.write(f"1 {-a / b} {p / b}")
 
-    except Exception as e:
-        print(e)
+    elif c != 0 and d != 0 and q != 0 and a / c == b / d == p / q:
+        if b != 0:
+            f.write(f"1 {-a / b} {p / b}")
+        else:
+            f.write(f"1 {-c / d} {q / d}")
+
+    elif a == 0 and b == 0 and p == 0 and q == 0:
+        f.write(f"1 {-c / d} {q / d}")
+
+    elif c == 0 and d == 0 and p == 0 and q == 0:
+        f.write(f"1 {-a / b} {p / b}")
+
+    else:
         f.write("0")
 
