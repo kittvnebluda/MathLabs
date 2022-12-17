@@ -1,5 +1,8 @@
 #!/usr/bin/python3
+import pickle
+import logging
 import argparse
+
 from collections import Counter
 
 
@@ -40,6 +43,8 @@ class BinaryNode(Node):
 
 
 def make_dict(text: str) -> dict:
+    logging.info('Создаю дерево')
+
     counter = Counter(text)
 
     assert len(counter) > 1
@@ -54,16 +59,37 @@ def make_dict(text: str) -> dict:
         # сортируем
         nodes.sort(key=lambda x: x.weight, reverse=True)
 
+    logging.info(f'Получившийся словарь: {nodes[0].leafs}')
+
     return nodes[0].leafs
 
 def encode(text, dict_):
+    logging.info(f'Кодирую: {text}')
     res = ''
     for s in text:
         res += dict_[s]
+    logging.info(f'Результат: {res}')
+
+    return res
+
+def decode(text, dict_):
+    logging.info(f'Декодирую: {text}')
+    new_dict = {value: key for (key, value) in dict_.items()}
+    res = ''
+    symbol = ''
+    for s in text:
+        symbol += s
+        if symbol in new_dict:
+            res += new_dict[symbol]
+            symbol = ''
+    logging.info(f'Результат: {res}')
+
     return res
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
     parser = argparse.ArgumentParser(description='Realization of Huffman algorithm')
     parser.add_argument('mode', choices=['encode', 'decode'])
     parser.add_argument('-i', '--input_file', default='input_file.txt')
@@ -72,20 +98,28 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.mode == 'encode':
+        logging.info(f'Читаю файл {args.input_file}')
         with open(args.input_file, 'r', encoding='utf8') as f:
             text = f.read()
         dictionary = make_dict(text)
 
         encoded_text = encode(text, dictionary)
+        logging.info(f'Записываю в файл {args.output_file}')
         with open(args.output_file, 'wb') as f:
-            f.write(encoded_text.encode('utf8'))
+            pickle.dump(len(dictionary), f)
+            pickle.dump(dictionary, f)
+            pickle.dump(encoded_text, f)
 
-    else:
-        with open(args.input_file, 'rb', encoding='utf8') as f:
-            text = f.read()
-        dictionary = make_dict(text)
+    elif args.mode == 'decode':
+        logging.info(f'Читаю файл {args.input_file}')
+        with open(args.input_file, 'rb') as f:
+            _ = pickle.load(f)
+            dictionary = pickle.load(f)
+            text = pickle.load(f)
 
-        encoded_text = encode(text, dictionary)
-        with open(args.output_file, 'wb') as f:
-            f.write(encoded_text.encode('utf8'))
+        decoded_text = decode(text, dictionary)
+        logging.info(f'Записываю в файл {args.output_file}')
+        with open(args.output_file, 'w', encoding='utf8') as f:
+            f.write(decoded_text)
+
 
