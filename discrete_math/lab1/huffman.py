@@ -6,6 +6,8 @@ import argparse
 from collections import Counter
 
 
+BYTES_SYMBOL = 7
+
 class Node:
     def __init__(self, weight, depth):
         self.weight = weight
@@ -61,33 +63,33 @@ def make_dict(text: str) -> dict:
         # сортируем
         nodes.sort(key=lambda x: x.weight, reverse=True)
 
-    logging.info(f'Получившийся словарь: {nodes[0].leafs}')
+    logging.info(f'Результат построения дерева: {nodes[0].leafs}')
 
     return nodes[0].leafs
 
 
 def encode(text, dict_):
-    logging.info(f'Кодирую: {text if len(text) < 10000 else 0}')
+    logging.info(f'Кодирую: {text if len(text) < 10000 else "слишком длинный текст для отображения"}')
     bin_res = ''
     for s in text:
         bin_res += dict_[s]
 
     res = ''
-    for i in range(8, len(bin_res), 8):
-        res += chr(int(bin_res[i - 8: i], 2))
+    for i in range(BYTES_SYMBOL, len(bin_res), BYTES_SYMBOL):
+        res += chr(int(bin_res[i - BYTES_SYMBOL: i], 2))
     res += chr(int(bin_res[i:], 2))
 
-    logging.info(f'Результат: {res if len(res) < 10000 else 0}')
+    logging.info(f'Результат: {res if len(res) < 10000 else "слишком длинный текст для отображения"}')
     return res
 
 
 def decode(text, dict_):
-    logging.info(f'Декодирую: {text if len(text) < 10000 else 0}')
+    logging.info(f'Декодирую: {text if len(text) < 10000 else "слишком длинный текст для отображения"}')
 
     bin_res = ''
     for s in text[:-1]:
         false_bin = bin(ord(s))[2:]
-        bin_res += '0' * (8 - len(false_bin)) + false_bin
+        bin_res += '0' * (BYTES_SYMBOL - len(false_bin)) + false_bin
     bin_res += bin(ord(text[-1]))[2:]
 
     new_dict = {value: key for (key, value) in dict_.items()}
@@ -99,7 +101,7 @@ def decode(text, dict_):
             res += new_dict[symbol]
             symbol = ''
 
-    logging.info(f'Результат: {res if len(res) < 10000 else 0}')
+    logging.info(f'Результат: {res if len(res) < 10000 else "слишком длинный текст для отображения"}')
     return res
 
 
@@ -122,7 +124,7 @@ if __name__ == '__main__':
         encoded_text = encode(text, dictionary)
         logging.info(f'Записываю в файл {args.output_file}')
         with open(args.output_file, 'wb') as f:
-            pickle.dump(dictionary, f)
+            # pickle.dump(dictionary, f)
             pickle.dump(encoded_text, f)
 
     elif args.mode == 'decode':
