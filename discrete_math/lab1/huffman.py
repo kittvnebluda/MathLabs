@@ -11,10 +11,12 @@ class Node:
         self.weight = weight
         self.depth = depth
 
+
 class SingleNode(Node):
     def __init__(self, child: tuple):
         super().__init__(child[1], child[0])
         self.child = child[0]
+
 
 class BinaryNode(Node):
     def __init__(self, node_left: Node, node_right: Node):
@@ -63,27 +65,41 @@ def make_dict(text: str) -> dict:
 
     return nodes[0].leafs
 
-def encode(text, dict_):
-    logging.info(f'Кодирую: {text}')
-    res = ''
-    for s in text:
-        res += dict_[s]
-    logging.info(f'Результат: {res}')
 
+def encode(text, dict_):
+    logging.info(f'Кодирую: {text if len(text) < 10000 else 0}')
+    bin_res = ''
+    for s in text:
+        bin_res += dict_[s]
+
+    res = ''
+    for i in range(8, len(bin_res), 8):
+        res += chr(int(bin_res[i - 8: i], 2))
+    res += chr(int(bin_res[i:], 2))
+
+    logging.info(f'Результат: {res if len(res) < 10000 else 0}')
     return res
 
+
 def decode(text, dict_):
-    logging.info(f'Декодирую: {text}')
+    logging.info(f'Декодирую: {text if len(text) < 10000 else 0}')
+
+    bin_res = ''
+    for s in text[:-1]:
+        false_bin = bin(ord(s))[2:]
+        bin_res += '0' * (8 - len(false_bin)) + false_bin
+    bin_res += bin(ord(text[-1]))[2:]
+
     new_dict = {value: key for (key, value) in dict_.items()}
     res = ''
     symbol = ''
-    for s in text:
+    for s in bin_res:
         symbol += s
         if symbol in new_dict:
             res += new_dict[symbol]
             symbol = ''
-    logging.info(f'Результат: {res}')
 
+    logging.info(f'Результат: {res if len(res) < 10000 else 0}')
     return res
 
 
@@ -106,14 +122,12 @@ if __name__ == '__main__':
         encoded_text = encode(text, dictionary)
         logging.info(f'Записываю в файл {args.output_file}')
         with open(args.output_file, 'wb') as f:
-            pickle.dump(len(dictionary), f)
             pickle.dump(dictionary, f)
             pickle.dump(encoded_text, f)
 
     elif args.mode == 'decode':
         logging.info(f'Читаю файл {args.input_file}')
         with open(args.input_file, 'rb') as f:
-            _ = pickle.load(f)
             dictionary = pickle.load(f)
             text = pickle.load(f)
 
@@ -121,5 +135,3 @@ if __name__ == '__main__':
         logging.info(f'Записываю в файл {args.output_file}')
         with open(args.output_file, 'w', encoding='utf8') as f:
             f.write(decoded_text)
-
-
