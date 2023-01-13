@@ -1,11 +1,6 @@
 import numpy as np
 
 CANNON_TURN_RANGE = 60  # Максимальный угол поворота пушек в градусах
-ZEROS = np.zeros(3)
-
-
-def length(v) -> np.float64:
-    return np.sqrt(v[0] ** 2 + v[1] ** 2 + v[2] ** 2)
 
 
 def unit_vector(vector):
@@ -70,16 +65,12 @@ def main(*args):
         mast = np.array(args[2])
         en_ship = np.array(args[3])
 
-    dist = en_ship - fr_ship
+    keel = ship_plane_vec(np.zeros(3), mast, keel_projection)
 
-    keel = ship_plane_vec(ZEROS, mast, keel_projection)
+    nr = np.cross(keel, mast)  # Нормаль левого борта
+    nl = np.cross(mast, keel)  # Нормаль правого борта
 
-    nl = np.cross(keel, mast)  # Нормаль левого борта
-    nr = np.cross(mast, keel)  # Нормаль правого борта
-
-    match_angle = round(angle_between(mast, np.array([0, 0, 1])), 2)
-
-    enemy_vec = ship_plane_vec(ZEROS, mast, dist)
+    enemy_vec = ship_plane_vec(fr_ship, mast, en_ship)
 
     angle_keel = angle_between(keel, enemy_vec)
     sign = -1 if angle_keel > 90 else 1
@@ -87,10 +78,13 @@ def main(*args):
     left_cannon_turn = round(angle_between(nl, enemy_vec), 2)
     right_cannon_turn = round(angle_between(nr, enemy_vec), 2)
 
+    # task request
+    match_angle = round(angle_between(mast, np.array([0, 0, 1])), 2)
+
     if right_cannon_turn < left_cannon_turn:
-        return beautiful_output(right_cannon_turn, 1)
+        return beautiful_output(right_cannon_turn, -1)
     else:
-        return beautiful_output(left_cannon_turn, -1)
+        return beautiful_output(left_cannon_turn, 1)
 
 
 if __name__ == "__main__":
