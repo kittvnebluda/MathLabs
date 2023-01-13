@@ -31,28 +31,6 @@ def angle_between(v1, v2):
     return angle if angle > .1 else 0.0
 
 
-def match_plane_offset(dist, n1, n2):
-    v_plane_xy = n1 - n1[2] / n2[2] * n2 if n2[2] != 0 else n2
-    v_plane_perp = np.cross(v_plane_xy, match)
-    v_xy_perp = np.cross(v_plane_xy, np.array([0, 0, 1]))
-
-    # Расстояние до плоскости палубы в плоскости xy
-    d = length(dist) * np.sin(np.radians(angle_between(v_plane_xy, dist)))
-
-    plane_angle = np.radians(angle_between(v_plane_perp, v_xy_perp))
-
-    h = d * np.tan(plane_angle)
-
-    # Проверяем, не будем ли стрелять в оду
-    plain_match = np.array([*match[:2], 0])
-    dist_angle = angle_between(plain_match, dist)
-    sign = 1 if dist_angle >= 90 or np.isnan(dist_angle) else -1
-
-    print(h)
-
-    return h * sign if h or sign > 0 else sign
-
-
 def ship_plane_vec(pt, n, vec):
     """
     Return vector in new plane made with point and normal
@@ -85,23 +63,23 @@ def main(*args):
             return 0, 0, match_angle, "Bye"
 
     if args:
-        global fr_ship, keel_projection, match, en_ship
+        global fr_ship, keel_projection, mast, en_ship
 
         fr_ship = np.array(args[0])
         keel_projection = np.array(args[1])
-        match = np.array(args[2])
+        mast = np.array(args[2])
         en_ship = np.array(args[3])
 
     dist = en_ship - fr_ship
 
-    keel = ship_plane_vec(ZEROS, match, keel_projection)
+    keel = ship_plane_vec(ZEROS, mast, keel_projection)
 
-    nl = np.cross(keel, match)  # Нормаль левого борта
-    nr = np.cross(match, keel)  # Нормаль правого борта
+    nl = np.cross(keel, mast)  # Нормаль левого борта
+    nr = np.cross(mast, keel)  # Нормаль правого борта
 
-    match_angle = round(angle_between(match, np.array([0, 0, 1])), 2)
+    match_angle = round(angle_between(mast, np.array([0, 0, 1])), 2)
 
-    enemy_vec = ship_plane_vec(ZEROS, match, dist)
+    enemy_vec = ship_plane_vec(ZEROS, mast, dist)
 
     angle_keel = angle_between(keel, enemy_vec)
     sign = -1 if angle_keel > 90 else 1
@@ -119,7 +97,7 @@ if __name__ == "__main__":
     with open("input.txt") as f:
         fr_ship = np.array([*map(float, next(f).split()), 0])
         keel_projection = np.array([*map(float, next(f).split()), 0])
-        match = np.array([*map(float, next(f).split()), 1])
+        mast = np.array([*map(float, next(f).split()), 1])
         en_ship = np.array([*map(float, next(f).split()), 0])
 
     s, beta, theta, w = main()
