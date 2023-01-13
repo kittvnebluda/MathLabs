@@ -1,103 +1,128 @@
-from copy import deepcopy
-from itertools import chain
+import numpy as np
+
+CANNON_TURN_RANGE = 60  # Максимальный угол поворота пушек в градусах
+ZEROS = np.zeros(3)
 
 
-class Matrix:
-    def __init__(self, arr):
-        """
-        Class for 2D matrices
-        """
-        self.matrix = arr
-        self.shape = len(arr), len(arr[0])
-
-    def __add__(self, other):
-        if self.shape != other.shape:
-            if __debug__: print("Размеры суммируемых матриц не равны")
-            return
-
-        new_matrix = deepcopy(self.matrix)
-
-        for i in range(self.shape[0]):
-            for j in range(self.shape[1]):
-                new_matrix[i][j] += other.matrix[i][j]
-
-        return Matrix(new_matrix)
-
-    def __str__(self) -> str:
-        return str(self.matrix)
-
-    def __mul__(self, other):
-        if self.shape[1] != other.shape[0]:
-            if __debug__: print(f"Размеры умножаемых матриц не верные: {self.shape[0]} != {other.shape[1]}")
-            return
-
-        new_matrix = [[0] * other.shape[1] for _ in range(self.shape[0])]
-
-        for i in range(self.shape[0]):
-            for j in range(other.shape[1]):
-                new_matrix[i][j] = sum(self.matrix[i][k] * other.matrix[k][j] for k in range(self.shape[1]))
-
-        return Matrix(new_matrix)
-
-    def __rmul__(self, other):
-        new_matrix = deepcopy(self.matrix)
-
-        for i in range(self.shape[0]):
-            for j in range(self.shape[1]):
-                new_matrix[i][j] *= other
-
-        return Matrix(new_matrix)
-
-    def getT(self):
-        new_matrix = []
-
-        for i in range(self.shape[1]):
-            row = []
-            for j in range(self.shape[0]):
-                row.append(self.matrix[j][i])
-            new_matrix.append(row)
-
-        return Matrix(new_matrix)
-
-    def flatten(self):
-        return tuple(chain.from_iterable(self.matrix))
-
-    @staticmethod
-    def from_what(flat_matrix, rows, columns):
-        new_matrix = []
-        for i in range(rows):
-            row = []
-            for j in range(columns):
-                row.append(flat_matrix[columns * i + j])
-            new_matrix.append(row)
-
-        return Matrix(new_matrix)
+def length(v) -> np.float64:
+    return np.sqrt(v[0] ** 2 + v[1] ** 2 + v[2] ** 2)
 
 
-with open("input.txt", encoding='utf8') as f:
-    alpha, beta = map(int, next(f).split())
+def unit_vector(vector):
+    """ Returns the unit vector of the vector.  """
+    return vector / np.linalg.norm(vector)
 
-    matrices = []
-    for _ in range(5):
-        n, m = map(int, next(f).split())
-        a = tuple(map(float, next(f).split()))
 
-        matrices.append(Matrix.from_what(a, n, m))
+def angle_between(v1, v2):
+    """ Returns the angle in degrees between vectors 'v1' and 'v2'::
 
-    a, b, c, d, f = matrices
+            >>> angle_between((1, 0, 0), (0, 1, 0))
+            90.0
+            >>> angle_between((4, 8, 0), (4, 8, 0))
+            0.0
+            >>> angle_between((1, 0, 0), (-1, 0, 0))
+            180.0
+    """
+    v1_u = unit_vector(v1)
+    v2_u = unit_vector(v2)
 
-try:
-    x = c * (alpha * a + beta * b.getT()).getT() * d + (-1) * f
+    angle = np.degrees(np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0)))
+
+    return angle if angle > .1 else 0.0
+
+
+def match_plane_offset(dist, n1, n2):
+    v_plane_xy = n1 - n1[2] / n2[2] * n2 if n2[2] != 0 else n2
+    v_plane_perp = np.cross(v_plane_xy, match)
+    v_xy_perp = np.cross(v_plane_xy, np.array([0, 0, 1]))
+
+    # Расстояние до плоскости палубы в плоскости xy
+    d = length(dist) * np.sin(np.radians(angle_between(v_plane_xy, dist)))
+
+    plane_angle = np.radians(angle_between(v_plane_perp, v_xy_perp))
+
+    h = d * np.tan(plane_angle)
+
+    # Проверяем, не будем ли стрелять в оду
+    plain_match = np.array([*match[:2], 0])
+    dist_angle = angle_between(plain_match, dist)
+    sign = 1 if dist_angle >= 90 or np.isnan(dist_angle) else -1
+
+    print(h)
+
+    return h * sign if h or sign > 0 else sign
+
+
+def ship_plane_vec(pt, n, vec):
+    """
+    Return vector in new plane made with point and normal
+    It finds z, x and y are the same
+
+            >>> ship_plane_vec((0, 0, 0), (0, 0, 1), (1, 1, 89))
+            array([1, 1, 0])
+    """
+    z = (n[2] * pt[2] - n[0] * (vec[0] - pt[0]) - n[1] * (vec[1] - pt[1]))
+    return np.array([vec[0], vec[1], z])
+
+
+def main(*args):
+    """
+    Finds solution
+
+            >>> main((0, 0, 0), (1, 0, 0), (0, 0, 1), (3, 4, 0))
+            (1, 36.87, 0.0, 'Bye')
+            >>> main((0, 0, 0), (1, 0, 0), (1, 0, 1), (-0.5, 1, 0))
+            (1, -35.26, 45.0, 'Bye')
+            >>> main((0, 0, 0), (1, 0, 0), (-1, 1, 1), (4, 4, 0))
+            (1, 30.0, 54.74, 'Bye')
+            >>> main((0, 0, 0), (1, 0, 0), (-1, 0, 1), (-3, -4, 0))
+            (0, 0, 45.0, 'Bye')
+    """
+    def beautiful_output(angle, side):
+        if -CANNON_TURN_RANGE <= angle <= CANNON_TURN_RANGE and enemy_vec[2] >= 0:
+            return side, angle * sign, match_angle, "Bye"
+        else:
+            return 0, 0, match_angle, "Bye"
+
+    if args:
+        global fr_ship, keel_projection, match, en_ship
+
+        fr_ship = np.array(args[0])
+        keel_projection = np.array(args[1])
+        match = np.array(args[2])
+        en_ship = np.array(args[3])
+
+    dist = en_ship - fr_ship
+
+    keel = ship_plane_vec(ZEROS, match, keel_projection)
+
+    nl = np.cross(keel, match)  # Нормаль левого борта
+    nr = np.cross(match, keel)  # Нормаль правого борта
+
+    match_angle = round(angle_between(match, np.array([0, 0, 1])), 2)
+
+    enemy_vec = ship_plane_vec(ZEROS, match, dist)
+
+    angle_keel = angle_between(keel, enemy_vec)
+    sign = -1 if angle_keel > 90 else 1
+
+    left_cannon_turn = round(angle_between(nl, enemy_vec), 2)
+    right_cannon_turn = round(angle_between(nr, enemy_vec), 2)
+
+    if right_cannon_turn < left_cannon_turn:
+        return beautiful_output(right_cannon_turn, 1)
+    else:
+        return beautiful_output(left_cannon_turn, -1)
+
+
+if __name__ == "__main__":
+    with open("input.txt") as f:
+        fr_ship = np.array([*map(float, next(f).split()), 0])
+        keel_projection = np.array([*map(float, next(f).split()), 0])
+        match = np.array([*map(float, next(f).split()), 1])
+        en_ship = np.array([*map(float, next(f).split()), 0])
+
+    s, beta, theta, w = main()
 
     with open("output.txt", "w") as f:
-        f.write("1\n")
-        f.write(f"{x.shape[0]} {x.shape[1]}\n")
-
-        flat_x = x.flatten()
-        for e in flat_x[:-1]:
-            f.write(f"{e} ")
-        f.write(str(flat_x[-1]))
-
-except AttributeError:
-    with open("output.txt", "w") as f:
-        f.write("0")
+        f.writelines([str(s) + "\n", str(beta) + "\n", str(theta) + "\n", w])
