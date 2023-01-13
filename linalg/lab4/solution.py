@@ -1,6 +1,7 @@
 import numpy as np
 
 CANNON_TURN_RANGE = 60  # Максимальный угол поворота пушек в градусах
+ZEROS = np.zeros(3)
 
 
 def unit_vector(vector):
@@ -58,19 +59,23 @@ def main(*args):
             return 0, 0, match_angle, "Bye"
 
     if args:
-        global fr_ship, keel_projection, mast, en_ship
+        global fr_ship, keel_projection, match, en_ship
 
         fr_ship = np.array(args[0])
         keel_projection = np.array(args[1])
-        mast = np.array(args[2])
+        match = np.array(args[2])
         en_ship = np.array(args[3])
 
-    keel = ship_plane_vec(np.zeros(3), mast, keel_projection)
+    dist = en_ship - fr_ship
 
-    nr = np.cross(keel, mast)  # Нормаль левого борта
-    nl = np.cross(mast, keel)  # Нормаль правого борта
+    keel = ship_plane_vec(ZEROS, match, keel_projection)
 
-    enemy_vec = ship_plane_vec(fr_ship, mast, en_ship)
+    nl = np.cross(keel, match)  # Нормаль левого борта
+    nr = np.cross(match, keel)  # Нормаль правого борта
+
+    match_angle = round(angle_between(match, np.array([0, 0, 1])), 2)
+
+    enemy_vec = ship_plane_vec(ZEROS, match, dist)
 
     angle_keel = angle_between(keel, enemy_vec)
     sign = -1 if angle_keel > 90 else 1
@@ -78,20 +83,17 @@ def main(*args):
     left_cannon_turn = round(angle_between(nl, enemy_vec), 2)
     right_cannon_turn = round(angle_between(nr, enemy_vec), 2)
 
-    # task request
-    match_angle = round(angle_between(mast, np.array([0, 0, 1])), 2)
-
     if right_cannon_turn < left_cannon_turn:
-        return beautiful_output(right_cannon_turn, -1)
+        return beautiful_output(right_cannon_turn, 1)
     else:
-        return beautiful_output(left_cannon_turn, 1)
+        return beautiful_output(left_cannon_turn, -1)
 
 
 if __name__ == "__main__":
     with open("input.txt") as f:
         fr_ship = np.array([*map(float, next(f).split()), 0])
         keel_projection = np.array([*map(float, next(f).split()), 0])
-        mast = np.array([*map(float, next(f).split()), 1])
+        match = np.array([*map(float, next(f).split()), 1])
         en_ship = np.array([*map(float, next(f).split()), 0])
 
     s, beta, theta, w = main()
