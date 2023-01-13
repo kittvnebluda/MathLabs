@@ -31,28 +31,6 @@ def angle_between(v1, v2):
     return angle if angle > .1 else 0.0
 
 
-def match_plane_offset(dist, n1, n2):
-    v_plane_xy = n1 - n1[2] / n2[2] * n2 if n2[2] != 0 else n2
-    v_plane_perp = np.cross(v_plane_xy, match)
-    v_xy_perp = np.cross(v_plane_xy, np.array([0, 0, 1]))
-
-    # Расстояние до плоскости палубы в плоскости xy
-    d = length(dist) * np.sin(np.radians(angle_between(v_plane_xy, dist)))
-
-    plane_angle = np.radians(angle_between(v_plane_perp, v_xy_perp))
-
-    h = d * np.tan(plane_angle)
-
-    # Проверяем, не будем ли стрелять в оду
-    plain_match = np.array([*match[:2], 0])
-    dist_angle = angle_between(plain_match, dist)
-    sign = 1 if dist_angle >= 90 or np.isnan(dist_angle) else -1
-
-    print(h)
-
-    return h * sign if h or sign > 0 else sign
-
-
 def ship_plane_vec(pt, n, vec):
     """
     Return vector in new plane made with point and normal
