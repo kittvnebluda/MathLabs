@@ -51,7 +51,7 @@ class CuboidWithMirrors:
         self.ray = Line(ray_pt, ray_vec)
         self.ray_energy = ray_energy
 
-        # for plane in self.planes[6:]:
+        # for plane in self.planes:
         #     print(plane.norm, plane.D)
 
     def find_interception(self):
@@ -62,26 +62,31 @@ class CuboidWithMirrors:
         for i, plane in enumerate(self.planes):
             n = plane.norm
             d = plane.D
+            scalar = np.dot(n, a)
             # Находим параметр пересечения прямой и плоскости
-            t = (d - np.dot(n, r0)) / np.dot(n, a)
-            # Не будем учитывать текущую точку луча света и точки вне параллелепипеда
-            if t > 0:
-                intersections.append((i, self.ray.solve(t)))
+            # Если они не параллельны
+            if scalar:
+                t = (d - np.dot(n, r0)) / scalar
+                # Не будем учитывать текущую точку луча света и точки вне направления вектора луча
+                if t > 0:
+                    intersections.append((i, self.ray.solve(t)))
 
         self.intersection = min(intersections, key=lambda x: np.linalg.norm(x[1] - r0))
 
     def reflect(self):
         if self.intersection:
+            self.ray.pt = self.intersection[1]
+
             # Если луч отразился от зеркала
             if self.intersection[0] > 5:
-                r0 = self.intersection[1]
                 r1 = self.ray.vec
                 a = self.planes[self.intersection[0]].norm
-                # Строим новый отраженный луч света, путем нахождения симметричной точки относительно нормали плоскости
-                self.ray.pt = r0
-                self.ray.vec = 2 * r0 - r1 - 2 * np.dot(r1 - r0, a) / np.dot(a, a) * a
+                # Строим отраженный луч света, путем нахождения симметричной точки относительно нормали плоскости
+                self.ray.vec = r1 - 2 * np.dot(r1, a) / np.dot(a, a) * a
 
+                print(f"Отражение в точке {self.ray.pt}, новый вектор - {self.ray.vec}")
                 return self.reduce_ray_energy()
+
             return 1  # Луч вылетел из параллелепипеда
         else:
             raise RuntimeWarning("Не найдено отражение")
@@ -101,7 +106,9 @@ class CuboidWithMirrors:
             if reflection_res < 2:
                 s = reflection_res
                 if s:
+                    print(f"Вылет из параллелепипеда в точке {self.intersection[1]}")
                     return s, self.ray_energy, self.ray.pt, self.ray.vec
+                print(f"Энергия закончилась в точке {self.intersection[1]}")
                 return s, self.ray.pt
 
 
