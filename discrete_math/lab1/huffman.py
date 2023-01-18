@@ -5,8 +5,8 @@ import argparse
 
 from collections import Counter
 
-
 BYTES_SYMBOL = 7
+
 
 class Node:
     def __init__(self, weight, depth):
