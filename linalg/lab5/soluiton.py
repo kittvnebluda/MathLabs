@@ -1,3 +1,5 @@
+import argparse
+
 import numpy as np
 
 
@@ -59,6 +61,7 @@ class CuboidWithMirrors:
         a = self.ray.vec
 
         intersections = []
+        guide_coefs = []
         for i, plane in enumerate(self.planes):
             n = plane.norm
             d = plane.D
@@ -70,8 +73,10 @@ class CuboidWithMirrors:
                 # Не будем учитывать текущую точку луча света и точки вне направления вектора луча
                 if t > 0:
                     intersections.append((i, self.ray.solve(t)))
+                    guide_coefs.append(t)
 
-        self.intersection = min(intersections, key=lambda x: np.linalg.norm(x[1] - r0))
+        # self.intersection = min(intersections, key=lambda x: np.linalg.norm(x[1] - r0))
+        self.intersection = intersections[guide_coefs.index(min(guide_coefs))]
 
     def reflect(self):
         if self.intersection:
@@ -107,6 +112,7 @@ class CuboidWithMirrors:
                 s = reflection_res
                 if s:
                     print(f"Вылет из параллелепипеда в точке {self.intersection[1]}")
+                    print(f"Направление при вылете {self.ray.vec}")
                     return s, self.ray_energy, self.ray.pt, self.ray.vec
                 print(f"Энергия закончилась в точке {self.intersection[1]}")
                 return s, self.ray.pt
@@ -135,21 +141,26 @@ def write_output(s: int, *args, fn="output.txt"):
         # Луч вылетел из параллелепипеда
         if s:
             ray_energy = str(args[0]) + "\n"
-            ray_pt = " ".join(map(str, args[1])) + "\n"
-            ray_vec = " ".join(map(str, args[2]))
+            ray_pt = " ".join(map(str, args[1].round(2))) + "\n"
+            ray_vec = " ".join(map(str, args[2].round(2)))
             f.writelines([str(s) + "\n", ray_energy, ray_pt, ray_vec])
         # Луч потратил всю энергию
         else:
-            ray_pt = " ".join(map(str, args[0]))
+            ray_pt = " ".join(map(str, args[0].round(2)))
             f.writelines([str(s) + "\n", ray_pt])
 
 
-def main():
-    input_data = read_input()
+def main(fn):
+    input_data = read_input(fn)
     cuboid = CuboidWithMirrors(input_data)
     output_data = cuboid.raytracing()
     write_output(*output_data)
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Math lab')
+    parser.add_argument('-i', '--input_filename', default='input.txt')
+
+    args = parser.parse_args()
+
+    main(args.input_filename)
